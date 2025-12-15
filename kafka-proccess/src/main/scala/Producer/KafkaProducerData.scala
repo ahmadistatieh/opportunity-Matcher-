@@ -17,8 +17,8 @@ object KafkaProducerData {
       .getOrCreate()
 
     val path =
-      "C:/kafka-proccess/kafka-proccess/src/main/Student_CVs/students_CVs.csv"
-
+      "C:\\Users\\HITECH\\OneDrive\\Desktop\\kafka-proccess\\kafka-proccess\\src\\main\\Student_CVs\\students_CVs.csv"
+    val topic = "staticData"
 
     val dfRaw = spark.read
       .option("header", "true")
@@ -29,6 +29,7 @@ object KafkaProducerData {
     val arrSchema = ArrayType(StringType)
 
     val df = dfRaw
+      .withColumn("id", col("id").cast(IntegerType))
       .withColumn("studying_hours", col("studying_hours").cast(IntegerType))
       .withColumn("training", col("training").cast(IntegerType))
       .withColumn("skills", from_json(col("skills"), arrSchema))
@@ -42,34 +43,39 @@ object KafkaProducerData {
 
     val props = new Properties()
     props.put("bootstrap.servers", "localhost:9092")
-    props.put("key.serializer",
-      "org.apache.kafka.common.serialization.StringSerializer")
-    props.put("value.serializer",
-      "org.apache.kafka.common.serialization.StringSerializer")
+    props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer")
+    props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer")
+    props.put("acks", "all")
 
     val producer = new KafkaProducer[String, String](props)
 
     try {
-      val rows = dfJson.collect()
+      val it = dfJson.toLocalIterator()
+      var batch = Vector.empty[String]
+      var batchId = 1
+      var total = 0
 
-      println(s"Total rows read from CSV: ${rows.length}")
-
-      rows.grouped(500).zipWithIndex.foreach {
-        case (batch, idx) =>
-          println(s"Sending batch #${idx + 1} (size = ${batch.size})")
-
-          batch.foreach { r =>
-            producer.send(
-              new ProducerRecord[String, String](
-                "staticData",
-                r.getAs[String]("value")
-              )
-            )
-          }
-
+      while (it.hasNext) {
+        batch = batch :+ it.next().getAs[String]("value")
+        if (batch.size == 500) {
+          println(s"Sending batch #$batchId (size=${batch.size})")
+          batch.foreach(v => producer.send(new ProducerRecord[String, String](topic, v)))
           producer.flush()
+          total += batch.size
+          batch = Vector.empty
+          batchId += 1
           Thread.sleep(20000)
+        }
       }
+
+      if (batch.nonEmpty) {
+        println(s"Sending batch #$batchId (size=${batch.size})")
+        batch.foreach(v => producer.send(new ProducerRecord[String, String](topic, v)))
+        producer.flush()
+        total += batch.size
+      }
+
+      println(s"✅ Total sent to Kafka: $total")
 
     } finally {
       producer.close()
