@@ -7,7 +7,6 @@ object main {
 
   def main(args: Array[String]): Unit = {
 
-    // ✅ لازم يكون موجود فعليًا وفيه bin/winutils.exe
     System.setProperty("hadoop.home.dir", "C:\\hadoop")
 
     val spark = SparkSession.builder()
@@ -19,7 +18,7 @@ object main {
     spark.sparkContext.setLogLevel("WARN")
 
     val bootstrapServers = "localhost:9092"
-    val topic = "staticData"
+    val topic = "Data"
 
     val mongoUri = "mongodb://localhost:27017"
     val dbName = "opportunityMatcher"
@@ -29,7 +28,7 @@ object main {
       spark = spark,
       bootstrapServers = bootstrapServers,
       topic = topic,
-      startingOffsets = "earliest" // أول مرة خليها earliest عشان تخزن كلشي
+      startingOffsets = "earliest"
     )
 
     val query: StreamingQuery = cleanStream.writeStream
@@ -39,7 +38,7 @@ object main {
         if (c > 0) MongoWriter.writeBatch(batchDF, mongoUri, dbName, collectionName)
       }
       .outputMode("append")
-      .option("checkpointLocation", "C:/tmp/spark_checkpoints/mongo_students_run1") // ✅ مسار مطلق أفضل
+      .option("checkpointLocation", "C:/tmp/spark_checkpoints/mongo_students_run5") // ✅ مسار مطلق أفضل
       .start()
 
     query.awaitTermination()

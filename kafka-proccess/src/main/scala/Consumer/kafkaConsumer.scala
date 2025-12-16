@@ -39,7 +39,7 @@ object kafkaConsumer {
       .format("kafka")
       .option("kafka.bootstrap.servers", bootstrapServers)
       .option("subscribe", topic)
-      .option("startingOffsets", startingOffsets) // latest / earliest
+      .option("startingOffsets", startingOffsets)
       .load()
 
     val parsed = kafkaStream
@@ -49,8 +49,8 @@ object kafkaConsumer {
       .filter(col("id").isNotNull)
 
     parsed
-      .drop("gender", "address", "birth_date") // ✅ المطلوب
-      .withColumn("created_at", to_date(col("created_at"))) // بتحول String -> Date
+      .drop("gender", "address", "birth_date")
+      .withColumn("created_at", to_date(col("created_at")))
       .withColumn("updated_at", to_date(col("updated_at")))
   }
 }

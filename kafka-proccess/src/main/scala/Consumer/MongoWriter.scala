@@ -13,7 +13,7 @@ object MongoWriter {
 
     batchDF.write
       .format("mongodb")
-      .mode(SaveMode.Append) // ✅ الصح
+      .mode(SaveMode.Append)
       .option("spark.mongodb.write.connection.uri", mongoUri)
       .option("spark.mongodb.write.database", db)
       .option("spark.mongodb.write.collection", collection)
