@@ -10,20 +10,15 @@ object kafkaConsumer {
     StructField("id", IntegerType, true),
     StructField("full_name", StringType, true),
     StructField("email", StringType, true),
-
     StructField("gender", StringType, true),
     StructField("address", StringType, true),
     StructField("birth_date", StringType, true),
-
     StructField("gpa", StringType, true),
     StructField("major", StringType, true),
-
     StructField("skills", ArrayType(StringType), true),
     StructField("courses", ArrayType(StringType), true),
-
     StructField("studying_hours", IntegerType, true),
     StructField("training", IntegerType, true),
-
     StructField("created_at", StringType, true),
     StructField("updated_at", StringType, true)
   ))
@@ -34,7 +29,6 @@ object kafkaConsumer {
                           topic: String,
                           startingOffsets: String = "latest"
                         ): DataFrame = {
-
     val kafkaStream = spark.readStream
       .format("kafka")
       .option("kafka.bootstrap.servers", bootstrapServers)
@@ -50,6 +44,8 @@ object kafkaConsumer {
 
     parsed
       .drop("gender", "address", "birth_date")
+      .withColumn("_id", col("id"))
+      .drop("id")
       .withColumn("created_at", to_date(col("created_at")))
       .withColumn("updated_at", to_date(col("updated_at")))
   }

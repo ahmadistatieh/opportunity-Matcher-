@@ -32,14 +32,10 @@ object KafkaProducerData {
       .master("local[*]")
       .config("spark.sql.legacy.timeParserPolicy", "LEGACY")
       .getOrCreate()
-
-    val path =
-      "C:\\Users\\HITECH\\OneDrive\\Desktop\\kafka-proccess\\kafka-proccess\\src\\main\\Student_CVs\\students_CVs.csv"
-
+    val path ="C:\\Users\\HITECH\\OneDrive\\Desktop\\kafka-proccess\\kafka-proccess\\src\\main\\Student_CVs\\students_CVs.csv"
     val topic = "Data"
 
     val arrSchema = ArrayType(StringType)
-
     val df = spark.read
       .option("header", "true")
       .option("quote", "\"")
@@ -55,7 +51,7 @@ object KafkaProducerData {
       .filter(col("id").isNotNull)
 
     val lastSentId = readLastSentId()
-    println(s"📌 Last sent id = $lastSentId")
+    println(s" Last sent id = $lastSentId")
 
     val dfNew = df
       .filter(col("id") > lastSentId)
@@ -89,37 +85,28 @@ object KafkaProducerData {
         batch = batch :+ (id, json)
 
         if (batch.size == BATCH_SIZE) {
-          println(s"🚀 Sending batch #$batchId (size=500)")
-
+          println(s" Sending batch #$batchId (size=500)")
           batch.foreach { case (i, v) =>
             producer.send(new ProducerRecord[String, String](topic, i.toString, v))
           }
-
           producer.flush()
-
           maxIdSent = batch.last._1
           writeLastSentId(maxIdSent)
-
           batch = Vector.empty
           batchId += 1
-
           Thread.sleep(20000)
         }
       }
 
       if (batch.nonEmpty) {
-        println(s"🚀 Sending batch #$batchId (size=${batch.size})")
-
+        println(s" Sending batch #$batchId (size=${batch.size})")
         batch.foreach { case (i, v) =>
           producer.send(new ProducerRecord[String, String](topic, i.toString, v))
         }
-
         producer.flush()
         writeLastSentId(batch.last._1)
       }
-
-      println(s"✅ Finished sending. Last ID = ${readLastSentId()}")
-
+      println(s" Finished sending. Last ID = ${readLastSentId()}")
     } finally {
       producer.close()
       spark.stop()
