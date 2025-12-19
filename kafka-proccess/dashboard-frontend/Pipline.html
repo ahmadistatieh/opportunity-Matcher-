@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <title>Project Pipeline – Centered Vertical Flow</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+
+  <style>
+    body{
+      margin:0;
+      font-family:"Segoe UI", Tahoma, Arial, sans-serif;
+      background:#f4f6f8;
+    }
+    .container{
+      max-width:1100px;
+      margin:30px auto;
+      padding:20px;
+      background:#ffffff;
+      border-radius:18px;
+      box-shadow:0 12px 30px rgba(0,0,0,.08);
+    }
+    h1{
+      text-align:center;
+      margin-bottom:16px;
+    }
+    .mermaid{
+      display:flex;
+      justify-content:center;
+    }
+  </style>
+</head>
+
+<body>
+<div class="container">
+<h1>Full Project Pipeline – Clean Centered Flow</h1>
+
+<div class="mermaid">
+flowchart TB
+
+%% ==========================
+%% CENTER ANCHOR
+%% ==========================
+CENTER((Pipeline))
+
+%% ==========================
+%% STAGE 1 – DATA SOURCE
+%% ==========================
+subgraph S1["🟦 Stage 1: Data Source"]
+direction LR
+CSV["CSV File<br/>Students Data"]
+end
+
+%% ==========================
+%% STAGE 2 – PRODUCER
+%% ==========================
+subgraph S2["🟩 Stage 2: Kafka Producer"]
+direction LR
+P1["Read CSV"]
+P2["Group 500 Rows"]
+P3["Send to Kafka Topic"]
+P1 --> P2 --> P3
+end
+
+%% ==========================
+%% STAGE 3 – KAFKA
+%% ==========================
+subgraph S3["🟨 Stage 3: Kafka Broker"]
+direction LR
+K1["Kafka Topic"]
+end
+
+%% ==========================
+%% STAGE 4 – CONSUMER
+%% ==========================
+subgraph S4["🟪 Stage 4: Consumer Processing"]
+direction LR
+C1["Consume Messages"]
+C2["Filter Data"]
+C3["Sort / Arrange"]
+C1 --> C2 --> C3
+end
+
+%% ==========================
+%% STAGE 5 – MONGODB
+%% ==========================
+subgraph S5["🟥 Stage 5: MongoDB (Upsert)"]
+direction LR
+M1["Check ID"]
+M2["Update Existing"]
+M3["Insert New"]
+M1 -->|Exists| M2
+M1 -->|Not Exists| M3
+end
+
+%% ==========================
+%% STAGE 6 – LSH API
+%% ==========================
+subgraph S6["🟦 Stage 6: LSHApiMain"]
+direction LR
+API["LSH API<br/>(Akka HTTP)"]
+LSH1["Load Students"]
+LSH2["Vector"]
+LSH3["MinHash LSH"]
+LSH4["Top 5 Ranking"]
+API --> LSH1 --> LSH2 --> LSH3 --> LSH4
+end
+
+%% ==========================
+%% STAGE 7 – DASHBOARD
+%% ==========================
+subgraph S7["🟩 Stage 7: Dashboard"]
+direction LR
+D1["Upload Opportunity"]
+D2["View Top 5 Students"]
+end
+
+%% ==========================
+%% VERTICAL CENTER FLOW
+%% ==========================
+CENTER --> CSV
+CSV --> P1
+P3 --> K1
+K1 --> C1
+C3 --> M1
+M2 --> API
+M3 --> API
+D1 --> API
+LSH4 --> D2
+
+%% ==========================
+%% STYLING
+%% ==========================
+classDef blue fill:#E8F1FF,stroke:#2B6CB0,stroke-width:1.2;
+classDef green fill:#EFFFF3,stroke:#2F855A,stroke-width:1.2;
+classDef yellow fill:#FFF7E6,stroke:#B7791F,stroke-width:1.2;
+classDef purple fill:#F3E8FF,stroke:#6B46C1,stroke-width:1.2;
+classDef red fill:#FFE8EE,stroke:#B83280,stroke-width:1.2;
+
+class CSV,API,LSH1,LSH2,LSH3,LSH4 blue
+class P1,P2,P3,D1,D2 green
+class K1 yellow
+class C1,C2,C3 purple
+class M1,M2,M3 red
+
+</div>
+</div>
+
+<script>
+mermaid.initialize({
+  startOnLoad:true,
+  theme:"base",
+  flowchart:{
+    nodeSpacing:80,
+    rankSpacing:110
+  },
+  themeVariables:{
+    fontSize:"15px",
+    nodeBorderRadius:"14px"
+  }
+});
+</script>
+
+</body>
+</html>

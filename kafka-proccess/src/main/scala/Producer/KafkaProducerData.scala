@@ -32,7 +32,7 @@ object KafkaProducerData {
       .master("local[*]")
       .config("spark.sql.legacy.timeParserPolicy", "LEGACY")
       .getOrCreate()
-    val path ="C:\\Users\\HITECH\\OneDrive\\Desktop\\kafka-proccess\\kafka-proccess\\src\\main\\Student_CVs\\students_CVs.csv"
+    val path ="C:\\opportunity-Matcher-\\kafka-proccess\\src\\main\\Student_CVs\\students_CVs.csv"
     val topic = "Data"
 
     val arrSchema = ArrayType(StringType)
