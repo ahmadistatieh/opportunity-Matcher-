@@ -5,8 +5,11 @@
     "Financial Accounting"
   ],
   "courses": [
-    "Financial Analysis Mastery"
+    "Excel for Accountants",
+    "Auditing Principles"
   ],
   "major": "Accounting",
-  "minGpa": 3.00
+  "minGpa": 3.5,
+  "studyingHours": 78,
+  "training": 2
 }

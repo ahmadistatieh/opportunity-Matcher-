@@ -61,13 +61,16 @@ function renderStudents(students) {
         <div class="student-name">${i + 1}. ${s.full_name}</div>
         <div class="student-email">${s.email}</div>
         <div class="student-meta">
-          <span>التخصص: ${s.major}</span>
-          <span>GPA: ${s.gpa_d}</span>
+          <div>التخصص: ${s.major || "-"}</div>
+          <div>GPA: ${s.gpa_d != null ? s.gpa_d : "-"}</div>
+          <div>التدريب: ${s.training != null ? s.training : "-"}</div>
+          <div>ساعات الدراسة: ${s.studying_hours != null ? s.studying_hours : "-"}</div>
         </div>
       </div>
 
       <div class="chips">
         ${(s.skills_arr || []).map(sk => `<span class="chip skill">${sk}</span>`).join("")}
+        ${(s.courses_arr || []).map(c => `<span class="chip course">${c}</span>`).join("")}
       </div>
 
       <div class="similarity-badge">
@@ -89,7 +92,6 @@ uploadForm.addEventListener("submit", async (e) => {
   try {
     const file = opportunityFileInput.files[0];
     const text = await file.text();
-    console.log(file.type)
 
     let payload;
 
@@ -110,8 +112,8 @@ uploadForm.addEventListener("submit", async (e) => {
     const students = await res.json();
     renderStudents(students);
 
-    setStatus(" تم جلب النتائج بنجاح", "success");
+    setStatus("تم جلب النتائج بنجاح", "success");
   } catch (err) {
-    setStatus(" خطأ في قراءة الملف أو الاتصال بالخادم", "error");
+    setStatus("خطأ في قراءة الملف أو الاتصال بالخادم", "error");
   }
 });

@@ -140,9 +140,8 @@ body {
   color: #6b7280;
 }
 
-.student-meta {
-  display: flex;
-  gap: 12px;
+.student-meta div {
+  margin-bottom: 4px; /* فصل كل وحدة على سطر كامل */
   font-size: 13px;
 }
 
@@ -160,12 +159,12 @@ body {
 
 .chip.skill {
   background: #ecfeff;
-  color: #0369a1;
+  color: #0369a1; /* أزرق */
 }
 
 .chip.course {
-  background: #fef3c7;
-  color: #92400e;
+  background: #fff4e6;
+  color: #c2410c; /* برتقالي */
 }
 
 
@@ -179,19 +178,15 @@ body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-
-  width: auto;        
-  height: auto;       
-  padding: 10px 14px; 
-
+  width: auto;
+  height: auto;
+  padding: 10px 14px;
   background: linear-gradient(135deg, #22c55e, #16a34a);
   color: #fff;
-
   font-weight: 800;
   font-size: 15px;
-
-  border-radius: 999px; 
-  white-space: nowrap;  
+  border-radius: 999px;
+  white-space: nowrap;
 }
 
 .empty-state {
