@@ -17,28 +17,6 @@ opportunityFileInput.addEventListener("change", () => {
   }
 });
 
-function buildPayloadFromText(text) {
-  const lower = text.toLowerCase();
-
-  const skills = [];
-  if (lower.includes("java")) skills.push("Java");
-  if (lower.includes("spark")) skills.push("Spark");
-  if (lower.includes("sql")) skills.push("SQL");
-  if (lower.includes("python")) skills.push("Python");
-
-  const courses = [];
-  if (lower.includes("algorithms")) courses.push("Algorithms");
-  if (lower.includes("database")) courses.push("Database");
-
-  return {
-    skills,
-    courses,
-    major: "",
-    minGpa: null,
-    minSimilarity: null
-  };
-}
-
 function renderStudents(students) {
   resultsList.innerHTML = "";
 
@@ -75,7 +53,7 @@ function renderStudents(students) {
 
       <div class="similarity-badge">
         <div class="similarity-pill">
-          ${(s.similarity * 100).toFixed(1)}%
+          ${((s.similarity || 0) * 100).toFixed(1)}%
         </div>
       </div>
     `;
@@ -86,34 +64,65 @@ function renderStudents(students) {
   resultsCountEl.textContent = students.length;
 }
 
+async function readErrorSafe(res) {
+  try {
+    const text = await res.text();
+    return text || `HTTP ${res.status}`;
+  } catch {
+    return `HTTP ${res.status}`;
+  }
+}
+
 uploadForm.addEventListener("submit", async (e) => {
   e.preventDefault();
 
+  const file = opportunityFileInput.files?.[0];
+  if (!file) {
+    setStatus("❌ الرجاء اختيار ملف", "error");
+    return;
+  }
+
   try {
-    const file = opportunityFileInput.files[0];
-    const text = await file.text();
-
-    let payload;
-
-    if (file.name.endsWith(".json")) {
-      payload = JSON.parse(text);
-    } else {
-      payload = buildPayloadFromText(text);
-    }
-
     setStatus("⏳ جاري تشغيل المطابقة...", "success");
 
-    const res = await fetch(`${API_BASE_URL}/match_students`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
-    });
+    const isJson = file.name.toLowerCase().endsWith(".json");
+
+    let res;
+
+    if (isJson) {
+      // Existing behavior: JSON -> /match_students
+      const text = await file.text();
+      const payload = JSON.parse(text);
+
+      res = await fetch(`${API_BASE_URL}/match_students`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+
+    } else {
+      // New behavior: PDF/DOC/DOCX/TXT -> /match_students_file (multipart/form-data)
+      const formData = new FormData();
+      formData.append("file", file);
+
+      res = await fetch(`${API_BASE_URL}/match_students_file`, {
+        method: "POST",
+        body: formData
+      });
+    }
+
+    if (!res.ok) {
+      const errTxt = await readErrorSafe(res);
+      setStatus(`❌ فشل الطلب: ${errTxt}`, "error");
+      return;
+    }
 
     const students = await res.json();
     renderStudents(students);
+    setStatus("✅ تم جلب النتائج بنجاح", "success");
 
-    setStatus("تم جلب النتائج بنجاح", "success");
   } catch (err) {
-    setStatus("خطأ في قراءة الملف أو الاتصال بالخادم", "error");
+    setStatus("❌ خطأ في قراءة الملف أو الاتصال بالخادم", "error");
+    console.error(err);
   }
 });

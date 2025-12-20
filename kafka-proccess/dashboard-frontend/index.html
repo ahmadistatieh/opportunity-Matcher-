@@ -20,8 +20,13 @@
 
             <form id="uploadForm" class="upload-form">
                 <label for="opportunityFile" class="file-input-label">
-                    اختر ملف الفرصة (JSON)
-                    <input type="file" id="opportunityFile" accept=".json,application/json" required />
+                اختر ملف الفرصة (PDF / DOC / DOCX / TXT)
+                <input
+                type="file"
+                id="opportunityFile"
+                accept=".json,.pdf,.doc,.docx,.txt,application/json,application/pdf"
+                required
+                />
                 </label>
 
                 <button type="submit" class="primary-btn">تشغيل المطابقة</button>
